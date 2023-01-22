@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "119158179279",
+    "project_id": "gym-bro-7064d",
+    "storage_bucket": "gym-bro-7064d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119158179279:android:f5a0ca8d09c977609a7eba",
+        "android_client_info": {
+          "package_name": "com.cursosant.android.stores"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "119158179279-rgvp5h5ir5ht6q3vrk3v83c9amfg7du2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaOFqgESUIn9wRHPn-pPvUpN0yOJSvnVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "119158179279-rgvp5h5ir5ht6q3vrk3v83c9amfg7du2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119158179279:android:ecf71d866ebda7dd9a7eba",
+        "android_client_info": {
+          "package_name": "com.example.gymbro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "119158179279-rgvp5h5ir5ht6q3vrk3v83c9amfg7du2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaOFqgESUIn9wRHPn-pPvUpN0yOJSvnVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "119158179279-rgvp5h5ir5ht6q3vrk3v83c9amfg7du2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
