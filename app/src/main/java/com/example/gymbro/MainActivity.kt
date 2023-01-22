@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
     private var mAuthLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()) {
             if(it.resultCode == Activity.RESULT_OK){
-                val value = it.data?.getStringExtra("input")
+                //val value = it.data?.getStringExtra("input")
                 Toast.makeText(this, "Bienvenido...", Toast.LENGTH_LONG).show()
             }else{
                 //Si canceló el FireBase UI (fué para atras)
@@ -84,23 +84,23 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mFirebaseAuth?.addAuthStateListener(mAuthListener)
+
         mUserId = FirebaseAuth.getInstance().currentUser?.uid
+        if(mUserId != null){
+            val muscleGroup = MuscleGroup("Espalda")
+            val musclerGroupKey = addMuscleGroup(muscleGroup)
 
-        val muscleGroup = MuscleGroup(1, "Espalda")
-        addMuscleGroup(muscleGroup)
+            val exercise = Exercise("Pull Down", musclerGroupKey)
+            addExercise(exercise)
 
-        val exercise = Exercise(1, "Pull Down", 1)
-        addExercise(exercise)
+            findExercisesByMuscleGroupKey(musclerGroupKey)
 
-        findExercisesByMuscleGroupId(muscleGroup.id)
+            /*val musclerGroupKey = "-NMQobAVw4xoMBaddole"
+            val exercise = Exercise("Remo", musclerGroupKey)
+            addExercise(exercise)
 
-        /*addExercise("Espalda", "Latt pulldown")
-        addExercise("Espalda", "Remo")
-        findExercisesByMuscleGroup("Espalda")
-
-        val infoItem1 = ExerciseInfoItem(1, 2, 10, null, 45.5F, WeightType.KG, null)
-        val infoItems = listOf(infoItem1)
-        addExerciseInfo("Espalda", "Latt pulldown", infoItems)*/
+            findExercisesByMuscleGroupKey(musclerGroupKey)*/
+        }
 
     }
 
@@ -110,54 +110,49 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         mFirebaseAuth?.removeAuthStateListener(mAuthListener)
-        mUserId = FirebaseAuth.getInstance().currentUser?.uid
     }
 
-    fun addMuscleGroup(muscleGroup: MuscleGroup){
-        val reference:DatabaseReference? = getMuscleGroupIdChild(muscleGroup.id)?.child(Util.NAME_FIELD);
+    fun addMuscleGroup(muscleGroup: MuscleGroup):String{
+        val key = mDatabase.push().key!!
+        val reference:DatabaseReference? = getMuscleGroupKeyChild(key)?.child(Util.NAME_FIELD);
         reference?.setValue(muscleGroup.name)
             ?: Toast.makeText(this, "Error adding the muscle group", Toast.LENGTH_LONG).show()
+        return key
     }
 
-    fun addExercise(exercise: Exercise){
+    fun addExercise(exercise: Exercise):String{
+        val exerciseKey = mDatabase.push().key!!
         val reference:DatabaseReference? =
-            getExerciseIdChild(exercise.muscleGroupId, exercise.id)?.child(Util.NAME_FIELD)
+            getExerciseKeyChild(exercise.muscleGroupKey, exerciseKey)?.child(Util.NAME_FIELD)
         reference?.setValue(exercise.name)
             ?: Toast.makeText(this, "Error adding the exercise", Toast.LENGTH_LONG).show()
+        return exerciseKey;
     }
 
-    fun findExercisesByMuscleGroupId(muscleGroupId:Long){
-        try{
-            val userId = FirebaseAuth.getInstance().currentUser?.uid
-            if(userId != null){
-                mDatabase.child(userId).child(Util.MUSCLE_GROUPS).child(muscleGroupId.toString())
-                    .child(Util.EXERCISES).addValueEventListener(object: ValueEventListener{
-                    override fun onDataChange(exercise: DataSnapshot) {
-                        if(exercise.exists()){
-                            for(exercise in exercise.children){
-                                val exerciseId = exercise.key
-                                exercise.child(exerciseId.toString())
-
-                                updateExerciseName(userId, muscleGroupId.toString(), exerciseId.toString())
-                            }
+    fun findExercisesByMuscleGroupKey(muscleGroupKey:String){
+        getMuscleGroupKeyChild(muscleGroupKey)?.child(Util.EXERCISES)
+            ?.addValueEventListener(object: ValueEventListener{
+                override fun onDataChange(exerciseGroup: DataSnapshot) {
+                    if(exerciseGroup.exists()){
+                        for(exercise in exerciseGroup.children){
+                            val exerciseId = exercise.key
+                            updateExerciseName(muscleGroupKey, exerciseId.toString())
                         }
                     }
-                    override fun onCancelled(error: DatabaseError) {
-                    }
-                });
-            }
-        }catch (ex: Exception){
-            Toast.makeText(this, "Error searching exercises", Toast.LENGTH_LONG).show()
-        }
+                }
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
     }
 
-    fun updateExerciseName(userId:String, muscleGroupId: String, exerciseId: String){
-        mDatabase.child(userId).child(Util.MUSCLE_GROUPS).child(muscleGroupId)
-            .child(Util.EXERCISES).child(exerciseId)
-            .addValueEventListener(object: ValueEventListener{
-                override fun onDataChange(exerciseInfo: DataSnapshot) {
-                    for(node in exerciseInfo.children){
-                        mBinding.textViewName.text = node.value.toString()
+    fun updateExerciseName(muscleGroupKey: String, exerciseKey: String){
+        getExerciseKeyChild(muscleGroupKey, exerciseKey)
+            ?.addValueEventListener(object: ValueEventListener{
+                override fun onDataChange(exercise: DataSnapshot) {
+                    for(exerciseField in exercise.children){
+                        mBinding.textViewName.text =
+                            mBinding.textViewName.text.toString() +
+                                    exerciseField.value.toString() + ","
                     }
                 }
                 override fun onCancelled(error: DatabaseError) {
@@ -192,13 +187,13 @@ class MainActivity : AppCompatActivity() {
         }
     }*/
 
-    fun getExerciseIdChild(muscleGroupId: Long, exerciseId:Long):DatabaseReference?{
-        return getMuscleGroupIdChild(muscleGroupId)?.child(Util.EXERCISES)
-            ?.child(exerciseId.toString())
+    fun getExerciseKeyChild(muscleGroupKey: String, exerciseKey:String):DatabaseReference?{
+        return getMuscleGroupKeyChild(muscleGroupKey)?.child(Util.EXERCISES)
+            ?.child(exerciseKey)
     }
 
-    fun getMuscleGroupIdChild(muscleGroupId:Long):DatabaseReference?{
+    fun getMuscleGroupKeyChild(key: String):DatabaseReference?{
         return mUserId?.let { mDatabase.child(mUserId.toString()).child(Util.MUSCLE_GROUPS)
-            .child(muscleGroupId.toString()) }
+            .child(key) }
     }
 }

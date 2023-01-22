@@ -1,4 +1,4 @@
 package com.example.gymbro.model
 
-class Exercise(val id: Long, val name: String, val muscleGroupId: Long) {
+class Exercise(val name: String, val muscleGroupKey: String) {
 }
